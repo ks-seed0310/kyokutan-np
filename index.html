@@ -283,7 +283,7 @@
         async function loadArticleDetail(databasePath, createDate) {
             try {
                 // databasePath（例: "articles_database/123.json"）を結合
-                const articleUrl = BASE_URL + databasePath;
+                const articleUrl = BASE_URL + "articles_database/" + databasePath;
                 
                 detailTitle.textContent = "読み込み中...";
                 detailMeta.textContent = "";
