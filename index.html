@@ -171,8 +171,8 @@
             display: block;
         }
 
-        /* トップページ用グリッドレイアウト */
-        .top-container {
+        /* 共通グリッドレイアウト（トップ & 検索結果） */
+        .page-container {
             max-width: 1180px;
             margin: 20px auto;
             padding: 0 15px;
@@ -198,12 +198,6 @@
             font-size: 1.25rem;
             font-weight: bold;
             color: #003366;
-            font-family: sans-serif;
-        }
-        .reset-search {
-            font-size: 0.8rem;
-            color: #cc0000;
-            cursor: pointer;
             font-family: sans-serif;
         }
 
@@ -252,6 +246,21 @@
             color: #777;
             margin-top: 5px;
             font-family: sans-serif;
+        }
+
+        /* 検索結果ページ専用スタイル */
+        .search-summary-box {
+            background: #f0f4f8;
+            border-left: 4px solid #003366;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            font-family: sans-serif;
+            font-size: 0.9rem;
+            color: #333;
+        }
+        .search-keyword-highlight {
+            font-weight: bold;
+            color: #003366;
         }
 
         /* 記事専用ページレイアウト */
@@ -326,10 +335,21 @@
             color: #111;
         }
         .error-desc {
-            color: #666;
+            color: #555;
             font-size: 0.95rem;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             line-height: 1.6;
+        }
+        .accessed-url-box {
+            background: #f8f8f8;
+            border: 1px dashed #ccc;
+            padding: 10px 15px;
+            margin: 0 auto 30px;
+            max-width: 600px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #cc0000;
+            word-break: break-all;
         }
         .btn-home {
             display: inline-block;
@@ -480,31 +500,43 @@
 
     <!-- メインビュー（トップページ） -->
     <div id="view-top" class="view-section active">
-        <div class="top-container">
+        <div class="page-container">
             <main class="main-content">
                 <div class="section-header">
-                    <span class="section-title" id="section-title-text">主要ニュース</span>
-                    <span class="reset-search" id="reset-search-btn" style="display: none;">[絞り込み解除]</span>
+                    <span class="section-title">主要ニュース</span>
                 </div>
-                <div id="articles-container">
+                <div id="top-articles-container">
                     <p class="loading">ニュースデータを読み込んでいます...</p>
                 </div>
             </main>
 
-            <aside>
-                <div class="sidebar-widget">
-                    <div class="widget-title">アクセスランキング</div>
-                    <ol class="ranking-list" id="ranking-container">
-                        <li class="loading">ランキング読み込み中...</li>
-                    </ol>
-                </div>
+            <aside id="sidebar-top">
+                <!-- サイドバー動的描画用テンプレート -->
+            </aside>
+        </div>
+    </div>
 
-                <div class="sidebar-widget">
-                    <div class="widget-title">社説・社告</div>
-                    <p style="font-size: 0.85rem; color: #444; line-height: 1.6;">
-                        当新聞社では報道の公平性を追求した結果、解説が超濃厚な記事と極端に短い記事のみを配信しております。
-                    </p>
+    <!-- 検索結果専用ビュー -->
+    <div id="view-search" class="view-section">
+        <div class="page-container">
+            <main class="main-content">
+                <div class="breadcrumb">
+                    <a href="#" class="nav-back-home">トップ</a> &gt; 記事検索結果
                 </div>
+                <div class="section-header">
+                    <span class="section-title">記事検索結果</span>
+                </div>
+                <div class="search-summary-box" id="search-summary">
+                    検索キーワード：<span class="search-keyword-highlight" id="search-keyword-text"></span>
+                    （該当件数：<span id="search-count-text">0</span>件）
+                </div>
+                <div id="search-articles-container">
+                    <!-- 検索結果一覧がここに入ります -->
+                </div>
+            </main>
+
+            <aside id="sidebar-search">
+                <!-- サイドバー動的描画用 -->
             </aside>
         </div>
     </div>
@@ -532,9 +564,11 @@
             <div class="error-code">404</div>
             <h2 class="error-title">お探しのページは見つかりませんでした</h2>
             <p class="error-desc">
-                アクセスしようとしたページは削除されたか、URLが間違っている可能性があります。<br>
-                トップページから最新のニュースをご確認ください。
+                アクセスしようとした以下のページは存在しないか、移動または削除された可能性があります。
             </p>
+            <div class="accessed-url-box">
+                アクセスURL: <span id="accessed-url-text"></span>
+            </div>
             <span class="btn-home nav-back-home">トップページへ戻る</span>
         </div>
     </div>
@@ -579,6 +613,7 @@
 
     <script>
         const BASE_URL = "https://ks-seed0310.github.io/kyokutan-np/";
+        const ERROR_404_URL = "https://ks-seed0310.github.io/error/404NotFound";
         const LIST_API_URL = BASE_URL + "info_articles_database.json";
         const RANKING_API_URL = BASE_URL + "info_access_lanking.json";
 
@@ -590,20 +625,25 @@
 
         // DOM参照
         const viewTop = document.getElementById('view-top');
+        const viewSearch = document.getElementById('view-search');
         const viewArticle = document.getElementById('view-article');
         const view404 = document.getElementById('view-404');
-        const articlesContainer = document.getElementById('articles-container');
-        const rankingContainer = document.getElementById('ranking-container');
+        
+        const topArticlesContainer = document.getElementById('top-articles-container');
+        const searchArticlesContainer = document.getElementById('search-articles-container');
+        const searchKeywordText = document.getElementById('search-keyword-text');
+        const searchCountText = document.getElementById('search-count-text');
+        const accessedUrlText = document.getElementById('accessed-url-text');
+
         const detailTitle = document.getElementById('detail-title');
         const detailMeta = document.getElementById('detail-meta');
         const detailBody = document.getElementById('detail-body');
         const tickerText = document.getElementById('ticker-text');
         const searchInput = document.getElementById('search-input');
         const searchBtn = document.getElementById('search-btn');
-        const sectionTitleText = document.getElementById('section-title-text');
-        const resetSearchBtn = document.getElementById('reset-search-btn');
 
         let globalArticles = [];
+        let globalRankingData = [];
 
         function formatDate(unixTime) {
             const date = new Date(unixTime * 1000);
@@ -613,15 +653,68 @@
         // 全ビュー非表示化 helper
         function hideAllViews() {
             viewTop.classList.remove('active');
+            viewSearch.classList.remove('active');
             viewArticle.classList.remove('active');
             view404.classList.remove('active');
         }
 
-        // 404画面表示
-        function show404Page() {
+        // 404画面表示（URLの書き換え & アクセスURLの表示）
+        function show404Page(targetUrl) {
+            const invalidUrl = targetUrl || window.location.href;
+            accessedUrlText.textContent = invalidUrl;
+
+            // 要求通りエラーページURLにreplaceState
+            history.replaceState({ page: '404' }, "", ERROR_404_URL);
+
             hideAllViews();
             view404.classList.add('active');
             window.scrollTo(0, 0);
+        }
+
+        // サイドバー描画処理
+        function renderSidebar(targetElementId) {
+            const sidebar = document.getElementById(targetElementId);
+            if (!sidebar) return;
+
+            let rankingItemsHtml = '';
+            if (globalRankingData.length > 0) {
+                rankingItemsHtml = globalRankingData.map((item, index) => `
+                    <li data-article-id="${item.articleId}">
+                        <span class="rank-num">${index + 1}</span>
+                        <div class="ranking-title">${item.title}</div>
+                    </li>
+                `).join('');
+            } else {
+                rankingItemsHtml = '<li style="color:#888;">ランキング情報がありません</li>';
+            }
+
+            sidebar.innerHTML = `
+                <div class="sidebar-widget">
+                    <div class="widget-title">アクセスランキング</div>
+                    <ol class="ranking-list">
+                        ${rankingItemsHtml}
+                    </ol>
+                </div>
+                <div class="sidebar-widget">
+                    <div class="widget-title">社説・社告</div>
+                    <p style="font-size: 0.85rem; color: #444; line-height: 1.6;">
+                        当新聞社では報道の公平性を追求した結果、解説が超濃厚な記事と極端に短い記事のみを配信しております。
+                    </p>
+                </div>
+            `;
+
+            // ランキングクリックイベント登録
+            sidebar.querySelectorAll('.ranking-list li').forEach(li => {
+                li.addEventListener('click', () => {
+                    const id = parseInt(li.getAttribute('data-article-id'), 10);
+                    const target = globalArticles.find(a => a.articleId === id);
+                    if (target) {
+                        navigateToArticle(target);
+                    } else {
+                        show404Page(BASE_URL + "article/" + id);
+                    }
+                });
+            });
         }
 
         // 初期化ロード
@@ -633,61 +726,45 @@
                 globalArticles = await response.json();
 
                 if (!Array.isArray(globalArticles) || globalArticles.length === 0) {
-                    articlesContainer.innerHTML = '<p>現在掲載中のニュースはありません。</p>';
+                    topArticlesContainer.innerHTML = '<p>現在掲載中のニュースはありません。</p>';
                     return;
                 }
 
                 globalArticles.sort((a, b) => b.createDate - a.createDate);
                 tickerText.textContent = globalArticles[0].title;
 
-                renderTopPage(globalArticles);
-
                 // ランキング取得
-                loadRanking();
+                await loadRanking();
+
+                // トップページ一覧描画
+                renderArticleList(globalArticles, topArticlesContainer);
+                renderSidebar('sidebar-top');
 
                 // URL検証およびルーティング
                 checkInitialUrl();
 
             } catch (error) {
-                articlesContainer.innerHTML = `<p style="color: red;">エラー: ${error.message}</p>`;
+                topArticlesContainer.innerHTML = `<p style="color: red;">エラー: ${error.message}</p>`;
             }
         }
 
-        // ランキング動的取得 (JSON構造: [{"title":String, "articleId":Number}, ...])
+        // ランキングデータ取得
         async function loadRanking() {
             try {
                 const response = await fetch(RANKING_API_URL);
                 if (!response.ok) throw new Error();
-                const rankingData = await response.json();
-
-                rankingContainer.innerHTML = '';
-                rankingData.forEach((item, index) => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <span class="rank-num">${index + 1}</span>
-                        <div class="ranking-title">${item.title}</div>
-                    `;
-                    li.addEventListener('click', () => {
-                        const target = globalArticles.find(a => a.articleId === item.articleId);
-                        if (target) {
-                            navigateToArticle(target);
-                        } else {
-                            show404Page();
-                        }
-                    });
-                    rankingContainer.appendChild(li);
-                });
+                globalRankingData = await response.json();
             } catch (error) {
-                rankingContainer.innerHTML = '<li style="color:#888;">ランキング情報の取得に失敗しました</li>';
+                globalRankingData = [];
             }
         }
 
-        // トップページの描画（フィルタリング対応）
-        function renderTopPage(articlesList) {
-            articlesContainer.innerHTML = '';
+        // 記事リストの構造化描画 Helper
+        function renderArticleList(articlesList, containerElement) {
+            containerElement.innerHTML = '';
 
             if (articlesList.length === 0) {
-                articlesContainer.innerHTML = '<p style="padding:20px 0; color:#666;">該当する記事が見つかりませんでした。</p>';
+                containerElement.innerHTML = '<p style="padding:20px 0; color:#666;">該当する記事が見つかりませんでした。</p>';
                 return;
             }
 
@@ -699,55 +776,48 @@
                         <h3>${article.title}</h3>
                         <div class="meta">更新時間: ${formatDate(article.createDate)} | 極端新聞速報</div>
                     `;
-                    topDiv.querySelector('h3').addEventListener('click', () => {
-                        navigateToArticle(article);
-                    });
-                    articlesContainer.appendChild(topDiv);
+                    topDiv.querySelector('h3').addEventListener('click', () => navigateToArticle(article));
+                    containerElement.appendChild(topDiv);
 
                     const listDiv = document.createElement('div');
                     listDiv.className = 'article-list';
-                    listDiv.id = 'sub-article-list';
-                    articlesContainer.appendChild(listDiv);
+                    listDiv.id = containerElement.id + '-sub-list';
+                    containerElement.appendChild(listDiv);
                 } else {
-                    const listContainer = document.getElementById('sub-article-list');
+                    const subListContainer = document.getElementById(containerElement.id + '-sub-list');
                     const item = document.createElement('div');
                     item.className = 'article-item';
                     item.innerHTML = `
                         <h4>${article.title}</h4>
                         <div class="meta">${formatDate(article.createDate)}</div>
                     `;
-                    item.querySelector('h4').addEventListener('click', () => {
-                        navigateToArticle(article);
-                    });
-                    listContainer.appendChild(item);
+                    item.querySelector('h4').addEventListener('click', () => navigateToArticle(article));
+                    subListContainer.appendChild(item);
                 }
             });
         }
 
-        // 検索処理
-        function handleSearch() {
-            const keyword = searchInput.value.trim().toLowerCase();
-            if (!keyword) {
-                resetSearch();
-                return;
-            }
+        // 検索機能の実行（検索結果ページへ移行）
+        function executeSearch(keyword) {
+            const cleanKeyword = keyword.trim();
+            if (!cleanKeyword) return;
+
+            const newUrl = BASE_URL + "search?q=" + encodeURIComponent(cleanKeyword);
+            history.replaceState({ keyword: cleanKeyword }, "", newUrl);
 
             const filtered = globalArticles.filter(article => 
-                article.title.toLowerCase().includes(keyword)
+                article.title.toLowerCase().includes(cleanKeyword.toLowerCase())
             );
 
-            showTopView(false);
-            sectionTitleText.textContent = `検索結果: "${keyword}" (${filtered.length}件)`;
-            resetSearchBtn.style.display = 'inline';
-            renderTopPage(filtered);
-        }
+            searchKeywordText.textContent = cleanKeyword;
+            searchCountText.textContent = filtered.length;
 
-        // 検索リセット
-        function resetSearch() {
-            searchInput.value = '';
-            sectionTitleText.textContent = '主要ニュース';
-            resetSearchBtn.style.display = 'none';
-            renderTopPage(globalArticles);
+            renderArticleList(filtered, searchArticlesContainer);
+            renderSidebar('sidebar-search');
+
+            hideAllViews();
+            viewSearch.classList.add('active');
+            window.scrollTo(0, 0);
         }
 
         // 記事詳細へのナビゲーション
@@ -773,7 +843,7 @@
             try {
                 const response = await fetch(articleUrl);
                 if (!response.ok) {
-                    show404Page();
+                    show404Page(articleUrl);
                     return;
                 }
                 const data = await response.json();
@@ -783,32 +853,36 @@
                 detailBody.innerHTML = data.mainData;
 
             } catch (error) {
-                show404Page();
+                show404Page(articleUrl);
             }
         }
 
         // トップ表示復帰
-        function showTopView(shouldResetSearch = true) {
+        function showTopView() {
             history.replaceState(null, "", BASE_URL + "index.html");
+            searchInput.value = '';
             hideAllViews();
             viewTop.classList.add('active');
             window.scrollTo(0, 0);
-            if (shouldResetSearch) {
-                resetSearch();
-            }
         }
 
-        // URL判定および未定義パス時の404制御
+        // 初期URL判定および未定義パス時の404制御
         function checkInitialUrl() {
             const urlParams = new URLSearchParams(window.location.search);
             const redirectPath = urlParams.get('redirectPath');
+            const searchParamQuery = urlParams.get('q');
+
+            // 1. リダイレクトクエリ経由での検索判定
+            if (searchParamQuery) {
+                searchInput.value = searchParamQuery;
+                executeSearch(searchParamQuery);
+                return;
+            }
 
             let rawPath = "";
-
             if (redirectPath) {
                 rawPath = redirectPath;
             } else {
-                // pathname から BASE_URL 部分を除去して判定用パスを取得
                 const currentPath = window.location.pathname;
                 if (currentPath.includes('/kyokutan-np/')) {
                     rawPath = currentPath.split('/kyokutan-np/')[1] || "";
@@ -820,6 +894,16 @@
             // ルートアクセス・index.html アクセス
             if (!rawPath || rawPath === 'index.html') {
                 return;
+            }
+
+            // 検索パス判定 (search?q=xxx)
+            if (rawPath.startsWith('search')) {
+                const q = urlParams.get('q');
+                if (q) {
+                    searchInput.value = q;
+                    executeSearch(q);
+                    return;
+                }
             }
 
             // article/:id 形式の検証
@@ -836,26 +920,26 @@
                 }
             }
 
-            // 一致するルーティングルールが存在しない（例: /example/abcdefg など）
-            show404Page();
+            // 一致するルーティングルールが存在しない場合（例: /example/abcdefg など）
+            const originalFullUrl = window.location.href;
+            show404Page(originalFullUrl);
         }
 
         // イベントリスナー
-        searchBtn.addEventListener('click', handleSearch);
+        searchBtn.addEventListener('click', () => executeSearch(searchInput.value));
         searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleSearch();
+            if (e.key === 'Enter') executeSearch(searchInput.value);
         });
-        resetSearchBtn.addEventListener('click', resetSearch);
 
-        document.getElementById('home-btn').addEventListener('click', () => showTopView(true));
+        document.getElementById('home-btn').addEventListener('click', () => showTopView());
         document.getElementById('nav-home').addEventListener('click', (e) => {
             e.preventDefault();
-            showTopView(true);
+            showTopView();
         });
         document.querySelectorAll('.nav-back-home').forEach(el => {
             el.addEventListener('click', (e) => {
                 e.preventDefault();
-                showTopView(true);
+                showTopView();
             });
         });
 
