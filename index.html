@@ -1,4 +1,4 @@
-//Version 1.0.0
+<!-- v1.0.1 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -81,7 +81,7 @@
             gap: 20px;
         }
 
-        /* 記事カード・コンテンツ表示エリア */
+        /* 記事カード */
         .card {
             background: #fff;
             padding: 20px;
@@ -119,7 +119,7 @@
         .back-btn {
             display: inline-block;
             margin-bottom: 15px;
-            padding: 5px 12px;
+            padding: 6px 14px;
             background: #333;
             color: #fff;
             font-size: 0.85rem;
@@ -220,14 +220,15 @@
     </footer>
 
     <script>
-        const BASE_DB_URL = "https://ks-seed0310.github.io/kyokutan-np/";
-        const LIST_API_URL = BASE_DB_URL + "info_articles_database.json";
+        // エンドポイントの設定
+        const BASE_URL = "https://ks-seed0310.github.io/kyokutan-np/";
+        const LIST_API_URL = BASE_URL + "info_articles_database.json";
 
-        // 日付の初期表示
+        // 日付表示の設定
         const today = new Date();
         document.getElementById('current-date').textContent = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
 
-        // 要素の取得
+        // DOM要素
         const listView = document.getElementById('article-list-view');
         const detailView = document.getElementById('article-detail');
         const articlesContainer = document.getElementById('articles-container');
@@ -235,13 +236,13 @@
         const detailMeta = document.getElementById('detail-meta');
         const detailBody = document.getElementById('detail-body');
 
-        // UNIXタイムスタンプのフォーマット関数
+        // UNIXタイムスタンプ変換関数
         function formatDate(unixTime) {
             const date = new Date(unixTime * 1000);
             return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
         }
 
-        // 記事一覧の取得
+        // 記事一覧を取得して表示
         async function loadArticleList() {
             try {
                 const response = await fetch(LIST_API_URL);
@@ -250,12 +251,12 @@
 
                 articlesContainer.innerHTML = '';
 
-                if (articles.length === 0) {
-                    articlesContainer.innerHTML = '<p>記事がありません。</p>';
+                if (!Array.isArray(articles) || articles.length === 0) {
+                    articlesContainer.innerHTML = '<p>現在配信中の記事はありません。</p>';
                     return;
                 }
 
-                // 作成日時順にソート（新しい順）
+                // 作成日時順（降順）に並び替え
                 articles.sort((a, b) => b.createDate - a.createDate);
 
                 articles.forEach(article => {
@@ -263,10 +264,10 @@
                     item.className = 'article-item';
                     item.innerHTML = `
                         <h3>${article.title}</h3>
-                        <div class="meta">投稿日: ${formatDate(article.createDate)}</div>
+                        <div class="meta">投稿日時: ${formatDate(article.createDate)}</div>
                     `;
                     
-                    // タイトルクリックで詳細取得
+                    // タイトルクリック時に個別記事を読み込み
                     item.querySelector('h3').addEventListener('click', () => {
                         loadArticleDetail(article.databasePath, article.createDate);
                     });
@@ -278,28 +279,27 @@
             }
         }
 
-        // 個別記事の取得・表示
-        async function loadArticleDetail(path, createDate) {
+        // 個別記事を取得して表示
+        async function loadArticleDetail(databasePath, createDate) {
             try {
-                // pathが"articles_database/xxx.json"想定のためベースURLと結合
-                const articleUrl = BASE_DB_URL + path;
+                // databasePath（例: "articles_database/123.json"）を結合
+                const articleUrl = BASE_URL + databasePath;
                 
                 detailTitle.textContent = "読み込み中...";
                 detailMeta.textContent = "";
-                detailBody.innerHTML = "<p class='loading'>本文を取得しています...</p>";
+                detailBody.innerHTML = "<p class='loading'>本文を読み込んでいます...</p>";
                 
-                // ビュー切り替え
                 listView.style.display = 'none';
                 detailView.style.display = 'block';
 
                 const response = await fetch(articleUrl);
-                if (!response.ok) throw new Error('記事の読み込みに失敗しました');
+                if (!response.ok) throw new Error('記事本文の取得に失敗しました');
                 const data = await response.json();
 
                 detailTitle.textContent = data.title;
-                detailMeta.textContent = `投稿日: ${formatDate(createDate)} | 記事ID: ${data.articleId}`;
+                detailMeta.textContent = `投稿日時: ${formatDate(createDate)} | 記事ID: ${data.articleId}`;
                 
-                // mainDataに入っているHTML文字列をそのままレンダリング
+                // mainDataのHTML文字列を展開
                 detailBody.innerHTML = data.mainData;
 
             } catch (error) {
@@ -307,13 +307,13 @@
             }
         }
 
-        // 一覧に戻る処理
+        // 一覧画面へ復帰
         function showListView() {
             detailView.style.display = 'none';
             listView.style.display = 'block';
         }
 
-        // イベントリスナーの設定
+        // イベントリスナー設定
         document.getElementById('back-to-list').addEventListener('click', showListView);
         document.getElementById('home-btn').addEventListener('click', showListView);
         document.getElementById('nav-home').addEventListener('click', (e) => {
@@ -321,7 +321,7 @@
             showListView();
         });
 
-        // 初回ロード
+        // 初期実行
         loadArticleList();
     </script>
 </body>
