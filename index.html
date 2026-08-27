@@ -1,319 +1,626 @@
-<!-- v1.0.1 -->
+<!-- v1.0.2 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>極端新聞 ONLINE</title>
+    <title>極端新聞 ONLINE - 総合ニュースサイト</title>
     <style>
+        /* グローバル設定 */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
         body {
-            font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
-            background-color: #f4f4f0;
-            color: #2b2b2b;
-            line-height: 1.6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", serif;
+            background-color: #f7f7f7;
+            color: #111;
+            line-height: 1.5;
+            font-size: 15px;
         }
         a {
             color: inherit;
             text-decoration: none;
         }
-
-        /* ヘッダー */
-        header {
-            background-color: #1a1a1a;
-            color: #fff;
-            padding: 15px 20px;
-            border-bottom: 4px solid #8b0000;
+        a:hover {
+            color: #003366;
+            text-decoration: underline;
         }
-        .header-top {
+
+        /* ユーティリティ・ヘッダー */
+        .top-bar {
+            background-color: #222;
+            color: #ccc;
+            font-size: 0.75rem;
+            padding: 4px 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .logo {
-            font-size: 2.2rem;
-            font-weight: bold;
-            letter-spacing: 4px;
-            cursor: pointer;
-        }
-        .date {
-            font-size: 0.85rem;
-            color: #ccc;
             font-family: sans-serif;
         }
+        .top-bar-links a {
+            color: #ccc;
+            margin-left: 12px;
+        }
 
-        /* ナビゲーション */
+        /* メインヘッダー */
+        header {
+            background-color: #fff;
+            border-bottom: 2px solid #003366;
+            padding: 15px 0 10px;
+        }
+        .header-inner {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 0 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .brand {
+            display: flex;
+            align-items: baseline;
+            gap: 15px;
+        }
+        .logo {
+            font-size: 2.8rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: #003366;
+            cursor: pointer;
+            line-height: 1;
+            font-family: "Yu Mincho", "Hiragino Mincho ProN", serif;
+        }
+        .sub-logo {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: bold;
+            font-family: sans-serif;
+        }
+        .header-right {
+            text-align: right;
+            font-family: sans-serif;
+        }
+        .date-display {
+            font-size: 0.85rem;
+            color: #444;
+            margin-bottom: 5px;
+        }
+        .search-box {
+            display: flex;
+            gap: 5px;
+        }
+        .search-box input {
+            padding: 4px 8px;
+            border: 1px solid #ccc;
+            font-size: 0.8rem;
+        }
+        .search-box button {
+            padding: 4px 10px;
+            background: #003366;
+            color: #fff;
+            border: none;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        /* ナビゲーションバー */
         nav {
-            background-color: #333;
-            border-bottom: 1px solid #444;
+            background-color: #003366;
+            color: #fff;
+            font-family: sans-serif;
+            border-bottom: 1px solid #002244;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         nav ul {
-            display: flex;
-            justify-content: center;
-            list-style: none;
-            max-width: 1200px;
+            max-width: 1180px;
             margin: 0 auto;
+            display: flex;
+            list-style: none;
+            padding: 0 15px;
         }
         nav li a {
             display: block;
-            padding: 10px 20px;
-            color: #eee;
-            font-size: 0.9rem;
-            font-family: sans-serif;
+            padding: 10px 18px;
+            color: #fff;
+            font-weight: bold;
+            font-size: 0.95rem;
+            border-right: 1px solid rgba(255,255,255,0.15);
+        }
+        nav li:first-child a {
+            border-left: 1px solid rgba(255,255,255,0.15);
         }
         nav li a:hover {
-            background-color: #555;
+            background-color: #002244;
+            text-decoration: none;
         }
 
-        /* メインレイアウト */
+        /* ニューステロップ */
+        .ticker-bar {
+            background: #eef2f5;
+            border-bottom: 1px solid #ddd;
+            padding: 6px 0;
+            font-size: 0.85rem;
+            font-family: sans-serif;
+        }
+        .ticker-inner {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 0 15px;
+            display: flex;
+            align-items: center;
+        }
+        .ticker-label {
+            background: #cc0000;
+            color: #fff;
+            padding: 2px 8px;
+            font-weight: bold;
+            font-size: 0.75rem;
+            margin-right: 12px;
+            white-space: nowrap;
+        }
+
+        /* メインコンテンツレイアウト */
         .container {
-            max-width: 1200px;
+            max-width: 1180px;
             margin: 20px auto;
             padding: 0 15px;
             display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
+            grid-template-columns: 1fr 300px;
+            gap: 25px;
         }
 
-        /* 記事カード */
-        .card {
+        /* 記事カード・リストエリア */
+        .main-content {
             background: #fff;
-            padding: 20px;
+            border: 1px solid #e0e0e0;
+            padding: 25px;
+        }
+        .section-header {
+            border-bottom: 2px solid #003366;
+            padding-bottom: 6px;
             margin-bottom: 20px;
-            border: 1px solid #ddd;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #003366;
+            font-family: sans-serif;
+        }
+
+        /* 一覧のスタイル */
+        .top-story {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        .top-story h3 {
+            font-size: 1.75rem;
+            line-height: 1.3;
+            margin-bottom: 10px;
+            cursor: pointer;
+            color: #003366;
+        }
+        .top-story h3:hover {
+            text-decoration: underline;
+        }
+
+        .article-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
         .article-item {
-            border-bottom: 1px dashed #ccc;
-            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 12px;
         }
         .article-item:last-child {
             border-bottom: none;
         }
-        .article-item h3 {
-            font-size: 1.2rem;
-            margin-bottom: 8px;
+        .article-item h4 {
+            font-size: 1.15rem;
+            line-height: 1.4;
             cursor: pointer;
-            color: #1a1a1a;
+            color: #222;
+            font-weight: bold;
         }
-        .article-item h3:hover {
-            color: #8b0000;
+        .article-item h4:hover {
+            color: #003366;
             text-decoration: underline;
         }
         .meta {
-            font-size: 0.8rem;
-            color: #666;
+            font-size: 0.78rem;
+            color: #777;
+            margin-top: 5px;
             font-family: sans-serif;
         }
-        
+
         /* 記事詳細表示用 */
         #article-detail {
             display: none;
         }
         .back-btn {
             display: inline-block;
-            margin-bottom: 15px;
-            padding: 6px 14px;
-            background: #333;
-            color: #fff;
+            margin-bottom: 20px;
+            padding: 6px 16px;
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ccc;
             font-size: 0.85rem;
             font-family: sans-serif;
             cursor: pointer;
-            border: none;
         }
         .back-btn:hover {
-            background: #555;
+            background: #e0e0e0;
         }
         .article-title {
-            font-size: 1.6rem;
-            margin-bottom: 15px;
+            font-size: 2rem;
             line-height: 1.3;
+            margin-bottom: 15px;
+            color: #111;
+            font-weight: bold;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 15px;
         }
         .article-body {
-            font-size: 0.95rem;
+            font-size: 1.05rem;
+            line-height: 1.85;
+            color: #222;
             text-align: justify;
-            line-height: 1.8;
+        }
+        .article-body p {
+            margin-bottom: 1.2em;
         }
 
-        /* サイドバー */
-        sidebar .card {
-            background: #fafafa;
+        /* サイドバー構造 */
+        .sidebar-widget {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            padding: 18px;
+            margin-bottom: 20px;
         }
-        sidebar h3 {
-            font-size: 1.1rem;
-            border-bottom: 2px solid #1a1a1a;
+        .widget-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #003366;
+            border-bottom: 2px solid #003366;
             padding-bottom: 5px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
+            font-family: sans-serif;
+        }
+        .ranking-list {
+            list-style: none;
+            font-family: sans-serif;
+        }
+        .ranking-list li {
+            display: flex;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px dashed #e0e0e0;
+            font-size: 0.85rem;
+        }
+        .ranking-list li:last-child {
+            border-bottom: none;
+        }
+        .rank-num {
+            font-weight: bold;
+            color: #cc0000;
+            font-size: 1.1rem;
+            line-height: 1;
         }
 
         /* フッター */
         footer {
-            background: #1a1a1a;
-            color: #888;
-            text-align: center;
-            padding: 20px;
-            font-size: 0.8rem;
+            background: #222;
+            color: #aaa;
             font-family: sans-serif;
-            margin-top: 40px;
+            margin-top: 50px;
+            border-top: 4px solid #003366;
+        }
+        .footer-inner {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 30px 15px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            font-size: 0.8rem;
+        }
+        .footer-col h5 {
+            color: #fff;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        .footer-col ul {
+            list-style: none;
+        }
+        .footer-col li {
+            margin-bottom: 6px;
+        }
+        .footer-bottom {
+            background: #111;
+            text-align: center;
+            padding: 15px;
+            font-size: 0.75rem;
+            color: #666;
+            border-top: 1px solid #333;
         }
 
         .loading {
             color: #666;
             font-style: italic;
+            font-family: sans-serif;
         }
     </style>
 </head>
 <body>
 
+    <!-- サブヘッダー -->
+    <div class="top-bar">
+        <div>極端新聞 ONLINE | 電子版</div>
+        <div class="top-bar-links">
+            <a href="#">文字サイズ 標準</a>
+            <a href="#">大</a>
+            <a href="#">組織案内</a>
+            <a href="#">購読申し込み</a>
+        </div>
+    </div>
+
+    <!-- メインヘッダー -->
     <header>
-        <div class="header-top">
-            <div class="logo" id="home-btn">極端新聞</div>
-            <div class="date" id="current-date"></div>
+        <div class="header-inner">
+            <div class="brand">
+                <div class="logo" id="home-btn">極端新聞</div>
+                <div class="sub-logo">KYOKUTAN SHIMBUN ONLINE</div>
+            </div>
+            <div class="header-right">
+                <div class="date-display" id="current-date">----年--月--日（-）</div>
+                <div class="search-box">
+                    <input type="text" placeholder="記事検索...">
+                    <button>検索</button>
+                </div>
+            </div>
         </div>
     </header>
 
+    <!-- メインナビゲーション -->
     <nav>
         <ul>
             <li><a href="#" id="nav-home">トップ</a></li>
-            <li><a href="#">記事一覧</a></li>
-            <li><a href="#">社説</a></li>
+            <li><a href="#">社会</a></li>
+            <li><a href="#">政治・経済</a></li>
+            <li><a href="#">国際</a></li>
+            <li><a href="#">社説・コラム</a></li>
+            <li><a href="#">人事・お悔やみ</a></li>
         </ul>
     </nav>
 
+    <!-- 速報ニューステロップ -->
+    <div class="ticker-bar">
+        <div class="ticker-inner">
+            <span class="ticker-label">速報</span>
+            <span id="ticker-text">最新のニュース情報を取得中...</span>
+        </div>
+    </div>
+
+    <!-- コンテンツエリア -->
     <div class="container">
-        <!-- メイン表示エリア -->
-        <main>
-            <!-- 記事一覧ビュー -->
-            <section id="article-list-view" class="card">
-                <h2 style="font-size: 1.3rem; border-bottom: 2px solid #8b0000; padding-bottom: 5px; margin-bottom: 15px;">最新記事一覧</h2>
+        <!-- メインカラム -->
+        <main class="main-content">
+            
+            <!-- 一覧表示ビュー -->
+            <section id="article-list-view">
+                <div class="section-header">
+                    <span class="section-title">主要ニュース</span>
+                </div>
                 <div id="articles-container">
-                    <p class="loading">記事データを読み込んでいます...</p>
+                    <p class="loading">ニュースデータを読み込んでいます...</p>
                 </div>
             </section>
 
-            <!-- 記事詳細ビュー -->
-            <section id="article-detail" class="card">
-                <button class="back-btn" id="back-to-list">← 記事一覧に戻る</button>
-                <h2 id="detail-title" class="article-title"></h2>
-                <div id="detail-meta" class="meta" style="margin-bottom: 20px;"></div>
+            <!-- 記事本文表示ビュー -->
+            <section id="article-detail">
+                <button class="back-btn" id="back-to-list">← ニュース一覧に戻る</button>
+                <h1 id="detail-title" class="article-title"></h1>
+                <div id="detail-meta" class="meta" style="margin-bottom: 25px;"></div>
                 <div id="detail-body" class="article-body"></div>
             </section>
+
         </main>
 
         <!-- サイドバー -->
-        <sidebar>
-            <div class="card">
-                <h3>編集部より</h3>
-                <p style="font-size: 0.85rem;">当新聞社では、情報量が多すぎて読むのに3日かかる記事と、3秒で読み終わる記事のみを厳選してお届けしております。</p>
+        <aside>
+            <div class="sidebar-widget">
+                <div class="widget-title">アクセスランキング</div>
+                <ol class="ranking-list">
+                    <li><span class="rank-num">1</span> <div>【詳細分析】三角コーンの樹脂構造と行政手続きの全貌</div></li>
+                    <li><span class="rank-num">2</span> <div>今日、暑い</div></li>
+                    <li><span class="rank-num">3</span> <div>公園の鳩、動かない</div></li>
+                    <li><span class="rank-num">4</span> <div>【完全検証】近所のドブ川における水質汚濁指標と微生物生態系の30年変化</div></li>
+                </ol>
             </div>
-        </sidebar>
+
+            <div class="sidebar-widget">
+                <div class="widget-title">社説・社告</div>
+                <p style="font-size: 0.85rem; color: #444; line-height: 1.6;">
+                    当新聞社では報道の公平性を追求した結果、解説が超濃厚な記事と極端に短い記事のみを配信しております。
+                </p>
+            </div>
+        </aside>
     </div>
 
+    <!-- フッター -->
     <footer>
-        &copy; 2026 極端新聞社 All Rights Reserved.
+        <div class="footer-inner">
+            <div class="footer-col">
+                <h5>ニュースカテゴリ</h5>
+                <ul>
+                    <li>社会・事件</li>
+                    <li>政治・行政</li>
+                    <li>経済・マネー</li>
+                    <li>国際情勢</li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h5>極端新聞社について</h5>
+                <ul>
+                    <li>会社概要</li>
+                    <li>採用情報</li>
+                    <li>記事利用・二次利用</li>
+                    <li>個人情報保護方針</li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h5>グループ関連企業</h5>
+                <ul>
+                    <li>極端出版</li>
+                    <li>極端デジタルメディア</li>
+                    <li>極端総合研究所</li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h5>購読案内</h5>
+                <ul>
+                    <li>朝刊・夕刊のご購読</li>
+                    <li>電子版のお申し込み</li>
+                    <li>試読のお申し込み</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 KYOKUTAN SHIMBUN. All Rights Reserved. 無断転載を禁じます。
+        </div>
     </footer>
 
+    <!-- スクリプト部 -->
     <script>
-        // エンドポイントの設定
+        // 設定データ
         const BASE_URL = "https://ks-seed0310.github.io/kyokutan-np/";
         const LIST_API_URL = BASE_URL + "info_articles_database.json";
 
-        // 日付表示の設定
+        // 日付・曜日の設定
+        const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
         const today = new Date();
-        document.getElementById('current-date').textContent = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
+        document.getElementById('current-date').textContent = 
+            `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日（${dayNames[today.getDay()]}）`;
 
-        // DOM要素
+        // DOM参照
         const listView = document.getElementById('article-list-view');
         const detailView = document.getElementById('article-detail');
         const articlesContainer = document.getElementById('articles-container');
         const detailTitle = document.getElementById('detail-title');
         const detailMeta = document.getElementById('detail-meta');
         const detailBody = document.getElementById('detail-body');
+        const tickerText = document.getElementById('ticker-text');
 
-        // UNIXタイムスタンプ変換関数
+        // UNIXタイムスタンプ変換
         function formatDate(unixTime) {
             const date = new Date(unixTime * 1000);
-            return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+            return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
         }
 
-        // 記事一覧を取得して表示
+        // 記事一覧ロード処理
         async function loadArticleList() {
             try {
                 const response = await fetch(LIST_API_URL);
-                if (!response.ok) throw new Error('記事一覧の取得に失敗しました');
+                if (!response.ok) throw new Error('記事一覧の通信に失敗しました');
                 const articles = await response.json();
 
                 articlesContainer.innerHTML = '';
 
                 if (!Array.isArray(articles) || articles.length === 0) {
-                    articlesContainer.innerHTML = '<p>現在配信中の記事はありません。</p>';
+                    articlesContainer.innerHTML = '<p>現在掲載中のニュースはありません。</p>';
                     return;
                 }
 
-                // 作成日時順（降順）に並び替え
+                // 作成日時順（新しい順）に並び替え
                 articles.sort((a, b) => b.createDate - a.createDate);
 
-                articles.forEach(article => {
-                    const item = document.createElement('div');
-                    item.className = 'article-item';
-                    item.innerHTML = `
-                        <h3>${article.title}</h3>
-                        <div class="meta">投稿日時: ${formatDate(article.createDate)}</div>
-                    `;
-                    
-                    // タイトルクリック時に個別記事を読み込み
-                    item.querySelector('h3').addEventListener('click', () => {
-                        loadArticleDetail(article.databasePath, article.createDate);
-                    });
+                // テロップに最新記事を表示
+                tickerText.textContent = articles[0].title;
 
-                    articlesContainer.appendChild(item);
+                // 記事リストの構築（トップニュースと一覧に分け、大手ニュースサイト風に構成）
+                articles.forEach((article, index) => {
+                    if (index === 0) {
+                        // 先頭はトップニュース（大型見出し）
+                        const topDiv = document.createElement('div');
+                        topDiv.className = 'top-story';
+                        topDiv.innerHTML = `
+                            <h3>${article.title}</h3>
+                            <div class="meta">更新時間: ${formatDate(article.createDate)} | 極端新聞速報</div>
+                        `;
+                        topDiv.querySelector('h3').addEventListener('click', () => {
+                            loadArticleDetail(article.databasePath, article.createDate);
+                        });
+                        articlesContainer.appendChild(topDiv);
+
+                        // 下部一覧用のコンテナ作成
+                        const listDiv = document.createElement('div');
+                        listDiv.className = 'article-list';
+                        listDiv.id = 'sub-article-list';
+                        articlesContainer.appendChild(listDiv);
+                    } else {
+                        // 2件目以降は通常リスト
+                        const listContainer = document.getElementById('sub-article-list');
+                        const item = document.createElement('div');
+                        item.className = 'article-item';
+                        item.innerHTML = `
+                            <h4>${article.title}</h4>
+                            <div class="meta">${formatDate(article.createDate)}</div>
+                        `;
+                        item.querySelector('h4').addEventListener('click', () => {
+                            loadArticleDetail(article.databasePath, article.createDate);
+                        });
+                        listContainer.appendChild(item);
+                    }
                 });
+
             } catch (error) {
                 articlesContainer.innerHTML = `<p style="color: red;">エラー: ${error.message}</p>`;
             }
         }
 
-        // 個別記事を取得して表示
+        // 個別記事取得処理
         async function loadArticleDetail(databasePath, createDate) {
             try {
-                // databasePath（例: "articles_database/123.json"）を結合
+                // 正しい階層 (BASE_URL + "articles_database/" + databasePath) で呼び出し
                 const articleUrl = BASE_URL + "articles_database/" + databasePath;
                 
                 detailTitle.textContent = "読み込み中...";
                 detailMeta.textContent = "";
-                detailBody.innerHTML = "<p class='loading'>本文を読み込んでいます...</p>";
+                detailBody.innerHTML = "<p class='loading'>記事本文を通信中...</p>";
                 
                 listView.style.display = 'none';
                 detailView.style.display = 'block';
 
+                window.scrollTo(0, 0); // 画面上部へスクロール
+
                 const response = await fetch(articleUrl);
-                if (!response.ok) throw new Error('記事本文の取得に失敗しました');
+                if (!response.ok) throw new Error('記事本文の通信に失敗しました');
                 const data = await response.json();
 
                 detailTitle.textContent = data.title;
-                detailMeta.textContent = `投稿日時: ${formatDate(createDate)} | 記事ID: ${data.articleId}`;
+                detailMeta.textContent = `配信日時: ${formatDate(createDate)} | 記事ID: ${data.articleId} | 極端新聞本紙`;
                 
-                // mainDataのHTML文字列を展開
+                // mainData（HTML）を安全に流し込み
                 detailBody.innerHTML = data.mainData;
 
             } catch (error) {
-                detailBody.innerHTML = `<p style="color: red;">エラー: ${error.message}</p>`;
+                detailBody.innerHTML = `<p style="color: red;">記事の取得に失敗しました: ${error.message}</p>`;
             }
         }
 
-        // 一覧画面へ復帰
+        // 一覧画面へ戻る
         function showListView() {
             detailView.style.display = 'none';
             listView.style.display = 'block';
         }
 
-        // イベントリスナー設定
+        // イベントバインド
         document.getElementById('back-to-list').addEventListener('click', showListView);
         document.getElementById('home-btn').addEventListener('click', showListView);
         document.getElementById('nav-home').addEventListener('click', (e) => {
@@ -321,7 +628,7 @@
             showListView();
         });
 
-        // 初期実行
+        // 起動処理
         loadArticleList();
     </script>
 </body>
