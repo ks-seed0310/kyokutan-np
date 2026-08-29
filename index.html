@@ -615,7 +615,7 @@
 
     <script>
         const BASE_URL = "https://ks-seed0310.github.io/kyokutan-np/";
-        const ERROR_404_URL = "https://ks-seed0310.github.io/error/404NotFound";
+        const ERROR_404_URL = "https://ks-seed0310.github.io/kyokutan-np/error/404NotFound";
         const LIST_API_URL = BASE_URL + "info_articles_database.json";
         const RANKING_API_URL = BASE_URL + "info_access_lanking.json";
 
@@ -811,6 +811,7 @@
                 article.title.toLowerCase().includes(cleanKeyword.toLowerCase())
             );
 
+            searchInput.value = cleanKeyword;
             searchKeywordText.textContent = cleanKeyword;
             searchCountText.textContent = filtered.length;
 
@@ -844,7 +845,6 @@
             try {
                 const response = await fetch(articleUrl);
                 if (!response.ok) {
-                    // 内部パスではなく表向きのURL（publicUrl）を渡して404を表示
                     show404Page(publicUrl);
                     return;
                 }
@@ -874,9 +874,8 @@
             const redirectPath = urlParams.get('redirectPath');
             const searchParamQuery = urlParams.get('q');
 
-            // 1. リダイレクトクエリ経由での検索判定
+            // 直接 index.html?q=xxx のパラメータでアクセスされた場合
             if (searchParamQuery) {
-                searchInput.value = searchParamQuery;
                 executeSearch(searchParamQuery);
                 return;
             }
@@ -898,12 +897,18 @@
                 return;
             }
 
-            // 検索パス判定 (search?q=xxx)
+            // 検索パス判定 (search?q=xxx や search へのリダイレクトパス)
             if (rawPath.startsWith('search')) {
-                const q = urlParams.get('q');
-                if (q) {
-                    searchInput.value = q;
-                    executeSearch(q);
+                let queryVal = "";
+                if (rawPath.includes('?')) {
+                    const searchParams = new URLSearchParams(rawPath.split('?')[1]);
+                    queryVal = searchParams.get('q') || "";
+                } else {
+                    queryVal = urlParams.get('q') || "";
+                }
+
+                if (queryVal) {
+                    executeSearch(queryVal);
                     return;
                 }
             }
