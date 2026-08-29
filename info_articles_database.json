@@ -1,5 +1,6 @@
 [
   {"title":"Test","databasePath":"algoTest.json","articleId":1,"createDate":1787816765},
   {"title":"明日の天気予報が何か分からない件について","databasePath":"2.json","articleId":2,"createDate":1787980981},
-  {"articleId":3,"title":"【お詫びと弁明】弊社HPのソースコード記述ミスにより突如レストラン予約ページへリダイレクトされた件に関する緊急声明","createDate":1787982118,"databasePath":"3.json"}
+  {"articleId":3,"title":"【お詫びと弁明】弊社HPのソースコード記述ミスにより突如レストラン予約ページへリダイレクトされた件に関する緊急声明","createDate":1787982118,"databasePath":"3.json"},
+  {"articleId":4,"title": "【詳細分析】三角コーンの樹脂構造と行政手続きの全貌","createDate": 1787982000,"databasePath": "4.json"}
 ]
