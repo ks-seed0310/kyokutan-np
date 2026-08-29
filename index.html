@@ -171,7 +171,7 @@
             display: block;
         }
 
-        /* 共通グリッドレイアウト（トップ & 検索結果） */
+        /* トップページグリッドレイアウト */
         .page-container {
             max-width: 1180px;
             margin: 20px auto;
@@ -248,7 +248,15 @@
             font-family: sans-serif;
         }
 
-        /* 検索結果ページ専用スタイル */
+        /* 検索結果専用ページ（1カラム・幅いっぱいスタイル） */
+        .search-container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 30px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
         .search-summary-box {
             background: #f0f4f8;
             border-left: 4px solid #003366;
@@ -511,33 +519,27 @@
             </main>
 
             <aside id="sidebar-top">
-                <!-- サイドバー動的描画用テンプレート -->
+                <!-- サイドバー動的描画用 -->
             </aside>
         </div>
     </div>
 
-    <!-- 検索結果専用ビュー -->
+    <!-- 検索結果専用ビュー（幅いっぱい1カラム構成） -->
     <div id="view-search" class="view-section">
-        <div class="page-container">
-            <main class="main-content">
-                <div class="breadcrumb">
-                    <a href="#" class="nav-back-home">トップ</a> &gt; 記事検索結果
-                </div>
-                <div class="section-header">
-                    <span class="section-title">記事検索結果</span>
-                </div>
-                <div class="search-summary-box" id="search-summary">
-                    検索キーワード：<span class="search-keyword-highlight" id="search-keyword-text"></span>
-                    （該当件数：<span id="search-count-text">0</span>件）
-                </div>
-                <div id="search-articles-container">
-                    <!-- 検索結果一覧がここに入ります -->
-                </div>
-            </main>
-
-            <aside id="sidebar-search">
-                <!-- サイドバー動的描画用 -->
-            </aside>
+        <div class="search-container">
+            <div class="breadcrumb">
+                <a href="#" class="nav-back-home">トップ</a> &gt; 記事検索結果
+            </div>
+            <div class="section-header">
+                <span class="section-title">記事検索結果</span>
+            </div>
+            <div class="search-summary-box" id="search-summary">
+                検索キーワード：<span class="search-keyword-highlight" id="search-keyword-text"></span>
+                （該当件数：<span id="search-count-text">0</span>件）
+            </div>
+            <div id="search-articles-container">
+                <!-- 検索結果一覧が入ります -->
+            </div>
         </div>
     </div>
 
@@ -663,7 +665,7 @@
             const invalidUrl = targetUrl || window.location.href;
             accessedUrlText.textContent = invalidUrl;
 
-            // 要求通りエラーページURLにreplaceState
+            // エラーページURLにreplaceState
             history.replaceState({ page: '404' }, "", ERROR_404_URL);
 
             hideAllViews();
@@ -671,7 +673,7 @@
             window.scrollTo(0, 0);
         }
 
-        // サイドバー描画処理
+        // サイドバー描画処理（トップページ専用）
         function renderSidebar(targetElementId) {
             const sidebar = document.getElementById(targetElementId);
             if (!sidebar) return;
@@ -813,7 +815,6 @@
             searchCountText.textContent = filtered.length;
 
             renderArticleList(filtered, searchArticlesContainer);
-            renderSidebar('sidebar-search');
 
             hideAllViews();
             viewSearch.classList.add('active');
@@ -822,14 +823,14 @@
 
         // 記事詳細へのナビゲーション
         function navigateToArticle(article) {
-            const newUrl = BASE_URL + "article/" + article.articleId;
-            history.replaceState({ articleId: article.articleId }, "", newUrl);
+            const publicUrl = BASE_URL + "article/" + article.articleId;
+            history.replaceState({ articleId: article.articleId }, "", publicUrl);
 
-            loadArticleContent(article.databasePath, article.createDate);
+            loadArticleContent(article.databasePath, article.createDate, publicUrl);
         }
 
         // 記事本文ロード
-        async function loadArticleContent(databasePath, createDate) {
+        async function loadArticleContent(databasePath, createDate, publicUrl) {
             const articleUrl = BASE_URL + "articles_database/" + databasePath;
 
             detailTitle.textContent = "読み込み中...";
@@ -843,7 +844,8 @@
             try {
                 const response = await fetch(articleUrl);
                 if (!response.ok) {
-                    show404Page(articleUrl);
+                    // 内部パスではなく表向きのURL（publicUrl）を渡して404を表示
+                    show404Page(publicUrl);
                     return;
                 }
                 const data = await response.json();
@@ -853,7 +855,7 @@
                 detailBody.innerHTML = data.mainData;
 
             } catch (error) {
-                show404Page(articleUrl);
+                show404Page(publicUrl);
             }
         }
 
@@ -920,7 +922,7 @@
                 }
             }
 
-            // 一致するルーティングルールが存在しない場合（例: /example/abcdefg など）
+            // 一致するルーティングルールが存在しない場合
             const originalFullUrl = window.location.href;
             show404Page(originalFullUrl);
         }
